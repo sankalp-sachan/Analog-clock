@@ -1,42 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-    <title>Analog Clock</title>
-  </head>
-
-  <body>
-    <div class="container">
-      <div class="clock">
-        <div style="--clr: #ff3d58; --h: 74px" id="hour" class="hand">
-          <i></i>
-        </div>
-        <div style="--clr: #00a6ff; --h: 84px" id="min" class="hand">
-          <i></i>
-        </div>
-        <div style="--clr: #ffffff; --h: 94px" id="sec" class="hand">
-          <i></i>
-        </div>
-
-        <span style="--i: 1"><b>1</b></span>
-        <span style="--i: 2"><b>2</b></span>
-        <span style="--i: 3"><b>3</b></span>
-        <span style="--i: 4"><b>4</b></span>
-        <span style="--i: 5"><b>5</b></span>
-        <span style="--i: 6"><b>6</b></span>
-        <span style="--i: 7"><b>7</b></span>
-        <span style="--i: 8"><b>8</b></span>
-        <span style="--i: 9"><b>9</b></span>
-        <span style="--i: 10"><b>10</b></span>
-        <span style="--i: 11"><b>11</b></span>
-        <span style="--i: 12"><b>12</b></span>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2-Minute Birthday Countdown</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(to right, #ff6a00, #ee0979);
+      font-family: Arial, sans-serif;
+      color: white;
+      text-align: center;
+    }
+    .countdown, .celebration {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    .time {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    .label {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="countdown">
+    <h1>🎉 Birthday Countdown 🎂</h1>
+    <div class="grid">
+      <div>
+        <div id="minutes" class="time">2</div>
+        <div class="label">Minutes</div>
+      </div>
+      <div>
+        <div id="seconds" class="time">0</div>
+        <div class="label">Seconds</div>
       </div>
     </div>
+  </div>
 
+  <canvas id="confetti"></canvas>
 
-    <script src="script.js"></script>
-  </body>
+  <script>
+    // Set countdown for 2 minutes
+    const targetDate = new Date().getTime() + (2 * 60 * 1000);
+
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Confetti particles
+    const confetti = [];
+    for (let i = 0; i < 300; i++) {
+      confetti.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        r: Math.random() * 6 + 2,
+        d: Math.random() * 50,
+        color: `hsl(${Math.random() * 360},100%,50%)`,
+        tilt: Math.random() * 10 - 10
+      });
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confetti.forEach((c, i) => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2, false);
+        ctx.fillStyle = c.color;
+        ctx.fill();
+        c.y += Math.cos(c.d) + 1 + c.r / 2;
+        c.x += Math.sin(c.d);
+        if (c.y > canvas.height) {
+          confetti[i] = {
+            x: Math.random() * canvas.width,
+            y: -10,
+            r: c.r,
+            d: c.d,
+            color: c.color,
+            tilt: c.tilt
+          };
+        }
+      });
+    }
+
+    function startConfetti() {
+      setInterval(drawConfetti, 20);
+    }
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const diff = targetDate - now;
+
+      if (diff <= 0) {
+        // 🎉 Show celebration UI
+        document.body.innerHTML = `
+          <div class="celebration">
+            <h1>🎂 Happy Birthday! 🎉</h1>
+            <p>Wishing you lots of joy, love, and celebration! 🥳</p>
+          </div>
+          <canvas id="confetti"></canvas>
+        `;
+        startConfetti();
+        return;
+      }
+
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      document.getElementById("minutes").innerText = minutes;
+      document.getElementById("seconds").innerText = seconds;
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+  </script>
+</body>
 </html>
